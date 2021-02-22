@@ -19,19 +19,19 @@ const imagemin = require('gulp-imagemin');
 const changed = require('gulp-changed');
 const browsersync = require('browser-sync').create();
 
-// Clean assets
+// Clean dist
 
 function clear() {
-    return src('./assets/*', {
+    return src('./dist/*', {
             read: false
         })
         .pipe(clean());
 }
 
-// JS function 
+// JS функція
 
 function js() {
-    const source = './src/js/*.js';
+    const source = './app/js/*.js';
 
     return src(source)
         .pipe(changed(source))
@@ -40,14 +40,14 @@ function js() {
         .pipe(rename({
             extname: '.min.js'
         }))
-        .pipe(dest('./assets/js/'))
+        .pipe(dest('./dist/js/'))
         .pipe(browsersync.stream());
 }
 
-// CSS function 
+// CSS функція
 
 function css() {
-    const source = './src/scss/main.scss';
+    const source = './app/sass/main.sass';
 
     return src(source)
         .pipe(changed(source))
@@ -60,24 +60,29 @@ function css() {
             extname: '.min.css'
         }))
         .pipe(cssnano())
-        .pipe(dest('./assets/css/'))
+        .pipe(dest('./dist/css/'))
         .pipe(browsersync.stream());
 }
 
-// Optimize images
-
+// Оптимізація img
 function img() {
-    return src('./src/img/*')
+    return src('./app/img/*')
         .pipe(imagemin())
-        .pipe(dest('./assets/img'));
+        .pipe(dest('./dist/img'));
+}
+// Тестова функція для html
+function html() {
+    return src('./app/*.html')
+        .pipe(dest('./dist/html'));
 }
 
-// Watch files
+// Перегляд зміни файлів
 
 function watchFiles() {
-    watch('./src/scss/*', css);
-    watch('./src/js/*', js);
-    watch('./src/img/*', img);
+    watch('./app/scss/*', css);
+    watch('./app/js/*', js);
+    watch('./app/img/*', img);
+    watch('./app/*.html', html);
 }
 
 // BrowserSync
@@ -91,7 +96,8 @@ function browserSync() {
     });
 }
 
-// Tasks to define the execution of the functions simultaneously or in series
+// Cтворення тасків
 
 exports.watch = parallel(watchFiles, browserSync);
-exports.default = series(clear, parallel(js, css, img));
+exports.default = series(parallel(js, css, img));
+exports.clean = parallel(clear);
